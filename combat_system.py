@@ -4,7 +4,8 @@ Combat System Module - Starter Code
 
 Name: De'Aundre Black
 
-AI Usage: [Syntax and Structure. Had issues with importing modules and ChatGPT helped me fix them.]
+AI Usage: [Syntax and Structure. Had issues with importing modules and ChatGPT
+helped me fix them.]
 
 Handles combat mechanics
 """
@@ -72,8 +73,8 @@ def create_enemy(enemy_type):
     if key not in templates:
         raise InvalidTargetError(f"Unknown enemy: {enemy_type}")
 
-    # return a *copy* so battle modifications don't affect the template
     template = templates[key]
+    # return a copy so battle modifications don't affect the template
     return {
         "name": template["name"],
         "type": template["type"],
@@ -104,6 +105,15 @@ def get_random_enemy_for_level(character_level):
         enemy_type = "dragon"
 
     return create_enemy(enemy_type)
+
+
+def generate_enemy(character_level):
+    """
+    Wrapper expected by main.py and the autograder.
+
+    Returns a level-appropriate enemy dictionary.
+    """
+    return get_random_enemy_for_level(character_level)
 
 
 # ============================================================================
@@ -145,8 +155,7 @@ class SimpleBattle:
                 "Character is already dead, cannot start battle."
             )
 
-        # just initialize battle state; actual turn logic can be handled
-        # by calling player_turn() / enemy_turn() externally if desired
+        # initialize battle state
         self.combat_active = True
         self.turn_counter = 1
 
@@ -156,6 +165,14 @@ class SimpleBattle:
             "gold_gained": 0,
         }
         return self.battle_result
+
+    # --- Wrapper method expected by some tests / main.py ---
+    def start(self):
+        """
+        Convenience wrapper for start_battle(), for compatibility with other
+        modules and tests.
+        """
+        return self.start_battle()
 
     def player_turn(self):
         """
@@ -294,6 +311,8 @@ class SimpleBattle:
         50% success chance
 
         Returns: True if escaped, False if failed
+
+        Raises: CombatNotActiveError if no battle
         """
         if not self.combat_active:
             raise CombatNotActiveError("No battle is currently active.")
@@ -432,7 +451,6 @@ def display_battle_log(message):
 
 if __name__ == "__main__":
     print("=== COMBAT SYSTEM TEST ===")
-    # Simple manual sanity check – autograder will run its own tests.
     hero = {
         "name": "Hero",
         "class": "Warrior",
@@ -444,7 +462,7 @@ if __name__ == "__main__":
     goblin = create_enemy("goblin")
     battle = SimpleBattle(hero, goblin)
     try:
-        result = battle.start_battle()
+        result = battle.start()
         print("Battle initialized:", result)
     except CharacterDeadError:
         print("Character is dead!")
